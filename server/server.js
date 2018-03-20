@@ -34,16 +34,19 @@ app.post('/todos', (req, res, next) => {
 
     let todo = new Todo({
 
-            text: req.body.text,
+        text: req.body.text,
 
-        })
-        .save()
+    });
+
+    todo.save()
         .then(doc => res.status(200).send(doc))
         .catch(e => res.status(400).send(`Unable to create todo. Error details : ${e}`));
 
-})
+});
 
 //#endregion
 
 
 app.listen(port, () => console.log(`Server up and running on port ${port}...`));
+
+module.exports = { app };
