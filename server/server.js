@@ -40,7 +40,19 @@ app.post('/todos', (req, res, next) => {
 
     todo.save()
         .then(doc => res.status(200).send(doc))
-        .catch(e => res.status(400).send(`Unable to create todo. Error details : ${e}`));
+        .catch(e =>
+            res.status(400).send(`Unable to create todo. Error details : ${e}`));
+
+});
+
+app.get('/todos', (req, res, next) => {
+
+    Todo.find().then(todos => {
+
+        res.status(200).send({ todos });
+
+    }).catch(e =>
+        res.status(400).send(`Unable to create todo. Error details : ${e}`));
 
 });
 
