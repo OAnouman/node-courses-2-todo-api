@@ -12,6 +12,8 @@ const app = express();
 
 const { mongoose } = require('./db/mongoose');
 
+const { ObjectID } = require('mongodb');
+
 const { Todo } = require('./models/Todo');
 
 const { User } = require('./models/User');
@@ -53,6 +55,34 @@ app.get('/todos', (req, res, next) => {
 
     }).catch(e =>
         res.status(400).send(`Unable to create todo. Error details : ${e}`));
+
+});
+
+app.get('/todos/:id', (req, res, next) => {
+
+    let id = req.params.id;
+
+    // Validate ID 
+
+    if (!ObjectID.isValid(id))
+
+        res.status(400).send(`The given id is not valid `);
+
+    Todo.findById(id)
+        .then(todo => {
+
+            if (!todo)
+
+                res.status(404).send('No todo matches the given id.');
+
+            res.status(200).send(todo);
+        })
+        .catch(e => {
+
+            res.status(400).send(e);
+
+        });
+
 
 });
 
