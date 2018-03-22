@@ -10,12 +10,28 @@ const { Todo } = require('./../models/Todo');
 
 //#endregion
 
+// Dummy data to seed database
+
+const dummyTodos = [
+
+    { text: 'First Test text' },
+    { text: 'Second Test text' },
+    { text: 'Third Test text' },
+    { text: 'Fourth Test text' },
+];
+
 beforeEach(done => {
 
     Todo.remove({})
-        .then(() => done());
+        .then(() => {
 
-})
+            Todo.insertMany(dummyTodos);
+
+            done();
+
+        });
+
+});
 
 
 describe('POST /todos', () => {
@@ -38,7 +54,7 @@ describe('POST /todos', () => {
 
                 if (err) return done(err);
 
-                Todo.find()
+                Todo.find({ text })
                     .then(docs => {
 
                         expect(docs.length).toBe(1);
@@ -69,7 +85,7 @@ describe('POST /todos', () => {
 
                 Todo.find().then(docs => {
 
-                        expect(docs.length).toBe(0);
+                        expect(docs.length).toBe(4);
 
                         done();
 
@@ -93,7 +109,7 @@ describe('POST /todos', () => {
 
                 Todo.find().then(docs => {
 
-                        expect(docs.length).toBe(0);
+                        expect(docs.length).toBe(4);
 
                         done();
 
@@ -101,6 +117,24 @@ describe('POST /todos', () => {
                     .catch(e => done(e));
 
             });
+
+    });
+
+});
+
+describe('GET /todos', () => {
+
+    it('Should get all four todos', (done) => {
+
+        request(app)
+            .get('/todos')
+            .expect(200)
+            .expect(res => {
+
+                expect(res.body.todos.length).toBe(4);
+
+            })
+            .end(done);
 
     });
 
