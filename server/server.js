@@ -20,7 +20,7 @@ const { User } = require('./models/User');
 
 //#endregion
 
-let port = process.PORT || 3000;
+let port = process.env.PORT || 3000;
 
 //#region Middleware
 
