@@ -8,16 +8,19 @@ const { app } = require('./../server');
 
 const { Todo } = require('./../models/Todo');
 
+const { ObjectID } = require('mongodb');
+
 //#endregion
 
 // Dummy data to seed database
 
 const dummyTodos = [
 
-    { text: 'First Test text' },
-    { text: 'Second Test text' },
-    { text: 'Third Test text' },
-    { text: 'Fourth Test text' },
+    { text: 'First Test text', _id: new ObjectID(), },
+    { text: 'Second Test text', _id: new ObjectID(), },
+    { text: 'Third Test text', _id: new ObjectID(), },
+    { text: 'Fourth Test text', _id: new ObjectID(), },
+
 ];
 
 beforeEach(done => {
@@ -137,5 +140,71 @@ describe('GET /todos', () => {
             .end(done);
 
     });
+
+});
+
+
+describe('GET /todos/id', () => {
+
+    it('Should return a valid doc', (done) => {
+
+        let testId = dummyTodos[0]._id;
+
+        request(app)
+            .get(`/todos/${testId}`)
+            .expect(200)
+            .expect(res => {
+                expect(res.body).toBeAn('object').toNotBe(null);
+            })
+            .end((err, res) => {
+
+                if (err) console.log(err);
+
+                let requestedTodo = res.body;
+
+                Todo.findById(testId)
+                    .then(todo => {
+
+                        expect(todo._id.toString()).toBe(requestedTodo._id);
+
+                        done();
+
+                    })
+                    .catch(err => console.log(err));
+
+            });
+
+    });
+
+    it('Should returns a 404 if todo not found', (done) => {
+
+        request(app)
+            .get(`/todos/${new ObjectID()}`)
+            .expect(404)
+            .end((err, res) => {
+
+                expect(err).toBe(null);
+
+                done();
+
+            });
+
+    });
+
+    it('Should returns a 400 id is not valid', (done) => {
+
+        request(app)
+            .get(`/todos/12345789`)
+            .expect(400)
+            .end((err, res) => {
+
+                expect(err).toBe(null);
+
+                done();
+
+            });
+
+    });
+
 
 });
