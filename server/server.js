@@ -58,6 +58,8 @@ app.get('/todos', (req, res, next) => {
 
 });
 
+// Get todo by id route
+
 app.get('/todos/:id', (req, res, next) => {
 
     let id = req.params.id;
@@ -69,6 +71,37 @@ app.get('/todos/:id', (req, res, next) => {
         res.status(400).send(`The given id is not valid `);
 
     Todo.findById(id)
+        .then(todo => {
+
+            if (!todo)
+
+                res.status(404).send('No todo matches the given id.');
+
+            res.status(200).send(todo);
+        })
+        .catch(e => {
+
+            res.status(400).send(e);
+
+        });
+
+
+});
+
+
+// Delete todo route
+
+app.delete('/todos/:id', (req, res, next) => {
+
+    let id = req.params.id;
+
+    // Validate ID 
+
+    if (!ObjectID.isValid(id))
+
+        res.status(400).send(`The given id is not valid `);
+
+    Todo.findByIdAndRemove(id)
         .then(todo => {
 
             if (!todo)
