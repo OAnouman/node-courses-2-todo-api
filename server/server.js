@@ -77,7 +77,7 @@ app.get('/todos/:id', (req, res, next) => {
 
                 res.status(404).send('No todo matches the given id.');
 
-            res.status(200).send(todo);
+            res.status(200).send({ todo });
         })
         .catch(e => {
 
@@ -108,11 +108,11 @@ app.delete('/todos/:id', (req, res, next) => {
 
                 res.status(404).send('No todo matches the given id.');
 
-            res.status(200).send(todo);
+            res.status(200).send({ todo });
         })
-        .catch(e => {
+        .catch(error => {
 
-            res.status(400).send(e);
+            res.status(400).send({ error });
 
         });
 

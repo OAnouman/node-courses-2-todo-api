@@ -144,7 +144,7 @@ describe('GET /todos', () => {
 });
 
 
-describe('GET /todos/id', () => {
+describe('GET /todos/:id', () => {
 
     it('Should return a valid doc', (done) => {
 
@@ -160,7 +160,7 @@ describe('GET /todos/id', () => {
 
                 if (err) console.log(err);
 
-                let requestedTodo = res.body;
+                let requestedTodo = res.body.todo;
 
                 Todo.findById(testId)
                     .then(todo => {
@@ -191,7 +191,7 @@ describe('GET /todos/id', () => {
 
     });
 
-    it('Should returns a 400 id is not valid', (done) => {
+    it('Should returns a 400 if id is not valid', (done) => {
 
         request(app)
             .get(`/todos/12345789`)
@@ -206,5 +206,58 @@ describe('GET /todos/id', () => {
 
     });
 
+
+});
+
+describe('DELETE /todos/:id', () => {
+
+    it('Should returns deleted todo doc', (done) => {
+
+        let id = dummyTodos[1]._id.toHexString();
+
+        request(app)
+            .delete(`/todos/${id}`)
+            .expect(200)
+            .expect(res => {
+
+                expect(res.body.todo._id).toBe(id);
+
+            })
+            .end((e, res) => {
+
+                if (e) return done(e);
+
+                Todo.find()
+                    .then(todos => {
+
+                        expect(todos.length).toBe(3);
+
+                        done();
+
+                    }).catch(e => done(e));
+
+            })
+
+    });
+
+    it('It should returns a 404 if todo not found', (done) => {
+
+        let id = new ObjectID();
+
+        request(app)
+            .delete(`/todos/${id}`)
+            .expect(404)
+            .end(done);
+
+    });
+
+    it('It should returns 400 if id is not valid', (done) => {
+
+        request(app)
+            .delete('/todos/123')
+            .expect(400)
+            .end(done);
+
+    });
 
 });
