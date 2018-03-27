@@ -1,5 +1,9 @@
 //#region Imports
 
+// ENV import
+
+require('./config/config');
+
 // Globals imports
 
 const express = require('express');
