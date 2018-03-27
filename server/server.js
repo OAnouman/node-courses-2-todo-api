@@ -38,6 +38,7 @@ app.use(bodyParser.json());
 
 //#region API routes
 
+//#region Todo routes
 app.post('/todos', (req, res, next) => {
 
     let todo = new Todo({
@@ -161,6 +162,35 @@ app.patch('/todos/:id', (req, res, next) => {
 
 
 });
+//#endregion
+
+//#region User routes
+
+app.post('/users', (req, res, next) => {
+
+    let body = _.pick(req.body, ['email', 'password']);
+
+    let user = new User(body);
+
+    user.save()
+        .then(() => {
+
+            return user.generateAuthToken();
+
+        })
+        .then(token => {
+
+            res.header('x-auth', token)
+                .status(200)
+                .send({ user });
+
+        })
+        .catch(e => res.status(400).send({ e }))
+
+
+})
+
+//#endregion
 
 //#endregion
 
