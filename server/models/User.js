@@ -71,6 +71,8 @@ UserSchema.methods.toJSON = function() {
 
 UserSchema.methods.generateAuthToken = function() {
 
+    // References a single user doc
+
     let user = this;
 
     let access = 'auth';
@@ -81,6 +83,32 @@ UserSchema.methods.generateAuthToken = function() {
 
     return user.save()
         .then(() => token);
+
+};
+
+UserSchema.statics.findByToken = function(token) {
+
+    // References the User model
+
+    let User = this;
+
+    let decoded;
+
+    try {
+
+        decoded = jwt.verify(token, '123abc');
+
+    } catch (e) {
+
+        return Promise.reject();
+
+    }
+
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth',
+    });
 
 };
 

@@ -24,6 +24,8 @@ const { Todo } = require('./models/Todo');
 
 const { User } = require('./models/User');
 
+const { authenticate } = require('./middleware/authenticate');
+
 //#endregion
 
 let port = process.env.PORT || 3000;
@@ -189,6 +191,32 @@ app.post('/users', (req, res, next) => {
 
 
 })
+
+
+
+app.get('/users/me', authenticate, (req, res, next) => {
+
+    let token = req.header('x-auth');
+
+    User.findByToken(token)
+        .then(user => {
+
+            if (!user) {
+
+                return Promise.reject();
+
+            }
+
+            res.status(200).send({ user });
+
+        })
+        .catch(e => {
+            res.sendStatus(401);
+        });
+
+
+
+});
 
 //#endregion
 
