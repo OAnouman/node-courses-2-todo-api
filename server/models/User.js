@@ -8,6 +8,8 @@ const _ = require('lodash');
 
 const validator = require('validator');
 
+const bcrypt = require('bcryptjs');
+
 //#endregion
 
 const UserSchema = new mongoose.Schema({
@@ -85,6 +87,33 @@ UserSchema.methods.generateAuthToken = function() {
         .then(() => token);
 
 };
+
+UserSchema.pre('save', function(next) {
+
+    let user = this;
+
+    if (user.isModified('password')) {
+
+        bcrypt.genSalt(20)
+            .then(salt => {
+
+                bcrypt.hash(user.password, salt)
+                    .then(hash => {
+
+                        user.password = hash;
+
+                        next();
+
+                    });
+
+            })
+            .catch(e => {});
+
+    } else {
+        next();
+    }
+
+});
 
 UserSchema.statics.findByToken = function(token) {
 
