@@ -8,6 +8,8 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
+const _ = require('lodash');
+
 // Local imports
 
 const { mongoose } = require('./db/mongoose');
@@ -106,7 +108,7 @@ app.delete('/todos/:id', (req, res, next) => {
 
             if (!todo)
 
-                res.status(404).send('No todo matches the given id.');
+                res.status(404).send('No todo match  the given id.');
 
             res.status(200).send({ todo });
         })
@@ -115,6 +117,43 @@ app.delete('/todos/:id', (req, res, next) => {
             res.status(400).send({ error });
 
         });
+
+
+});
+
+app.patch('/todos/:id', (req, res, next) => {
+
+    let id = req.params.id;
+
+    let body = _.pick(req.body, ['text', 'completed']);
+
+    if (!ObjectID.isValid(id))
+
+        res.status(400).send(`The given id is not valid `);
+
+    if (_.isBoolean(body.completed) && body.completed) {
+
+        body.completedAt = new Date().getTime();
+
+    } else {
+
+        body.completed = false;
+
+        body.completedAt = null;
+
+    }
+
+    Todo.findByIdAndUpdate(id, { $set: body }, { new: true })
+        .then(todo => {
+
+            if (!todo)
+
+                res.status(404).send({ error: 'Todo not found' });
+
+            res.status(200).send({ todo });
+
+        })
+        .catch(e => res.status(400).send({ e }));
 
 
 });
