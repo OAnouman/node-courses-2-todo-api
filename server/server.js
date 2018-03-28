@@ -50,7 +50,7 @@ app.post('/todos', (req, res, next) => {
     });
 
     todo.save()
-        .then(doc => res.status(200).send(doc))
+        .then(doc => res.send(doc))
         .catch(e =>
             res.status(400).send(`Unable to create todo. Error details : ${e}`));
 
@@ -60,7 +60,7 @@ app.get('/todos', (req, res, next) => {
 
     Todo.find().then(todos => {
 
-        res.status(200).send({ todos });
+        res.send({ todos });
 
     }).catch(e =>
         res.status(400).send(`Unable to create todo. Error details : ${e}`));
@@ -86,11 +86,11 @@ app.get('/todos/:id', (req, res, next) => {
 
                 res.status(404).send('No todo matches the given id.');
 
-            res.status(200).send({ todo });
+            res.send({ todo });
         })
         .catch(e => {
 
-            res.status(400).send(e);
+            res.sendStatus(400);
 
         });
 
@@ -117,7 +117,7 @@ app.delete('/todos/:id', (req, res, next) => {
 
                 res.status(404).send('No todo match  the given id.');
 
-            res.status(200).send({ todo });
+            res.send({ todo });
         })
         .catch(error => {
 
@@ -157,7 +157,7 @@ app.patch('/todos/:id', (req, res, next) => {
 
                 res.status(404).send({ error: 'Todo not found' });
 
-            res.status(200).send({ todo });
+            res.send({ todo });
 
         })
         .catch(e => res.status(400).send({ e }));
@@ -183,7 +183,6 @@ app.post('/users', (req, res, next) => {
         .then(token => {
 
             res.header('x-auth', token)
-                .status(200)
                 .send({ user });
 
         })
@@ -207,7 +206,7 @@ app.get('/users/me', authenticate, (req, res, next) => {
 
             }
 
-            res.status(200).send({ user });
+            res.send({ user });
 
         })
         .catch(e => {

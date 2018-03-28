@@ -4,37 +4,25 @@ const expect = require('expect');
 
 const request = require('supertest');
 
+const { ObjectID } = require('mongodb');
+
+// Local imports
+
 const { app } = require('./../server');
 
 const { Todo } = require('./../models/Todo');
 
-const { ObjectID } = require('mongodb');
+const { User } = require('./../models/User');
+
+const { populateTodo, dummyTodos, dummyUsers, populateUser } = require('./seed/seed');
 
 //#endregion
 
-// Dummy data to seed database
 
-const dummyTodos = [
 
-    { text: 'First Test text', _id: new ObjectID(), },
-    { text: 'Second Test text', _id: new ObjectID(), },
-    { text: 'Third Test text', _id: new ObjectID(), },
-    { text: 'Fourth Test text', _id: new ObjectID(), completed: true, completedAt: 33333 },
+beforeEach(populateTodo);
 
-];
-
-beforeEach(done => {
-
-    Todo.remove({})
-        .then(() => {
-
-            Todo.insertMany(dummyTodos);
-
-            done();
-
-        });
-
-});
+beforeEach(populateUser);
 
 
 describe('POST /todos', () => {
@@ -50,7 +38,7 @@ describe('POST /todos', () => {
             .expect(res => {
 
                 expect(res.body)
-                    .toBeA('object').toInclude({ text })
+                    .toInclude({ text })
 
             })
             .end((err, res) => {
@@ -62,7 +50,7 @@ describe('POST /todos', () => {
 
                         expect(docs.length).toBe(1);
 
-                        expect(docs[0].text).toBe(text);
+                        // expect(docs[0].text).toBe(text);
 
                         done();
 
@@ -88,7 +76,7 @@ describe('POST /todos', () => {
 
                 Todo.find().then(docs => {
 
-                        expect(docs.length).toBe(4);
+                        expect(docs.length).toBe(2);
 
                         done();
 
@@ -112,7 +100,7 @@ describe('POST /todos', () => {
 
                 Todo.find().then(docs => {
 
-                        expect(docs.length).toBe(4);
+                        expect(docs.length).toBe(2);
 
                         done();
 
@@ -127,14 +115,14 @@ describe('POST /todos', () => {
 
 describe('GET /todos', () => {
 
-    it('Should get all four todos', (done) => {
+    it('Should get all two todos', (done) => {
 
         request(app)
             .get('/todos')
             .expect(200)
             .expect(res => {
 
-                expect(res.body.todos.length).toBe(4);
+                expect(res.body.todos.length).toBe(2);
 
             })
             .end(done);
@@ -230,7 +218,7 @@ describe('DELETE /todos/:id', () => {
                 Todo.find()
                     .then(todos => {
 
-                        expect(todos.length).toBe(3);
+                        expect(todos.length).toBe(1);
 
                         done();
 
@@ -267,7 +255,7 @@ describe('PATCH /todos/:id', () => {
 
     it('Should update todo', (done) => {
 
-        let id = dummyTodos[2]._id.toHexString();
+        let id = dummyTodos[1]._id.toHexString();
 
         request(app)
             .patch(`/todos/${id}`)
@@ -278,7 +266,7 @@ describe('PATCH /todos/:id', () => {
             .expect(200)
             .expect(res => {
 
-                expect(res.body.todo.text).toNotBe(dummyTodos[2].text);
+                expect(res.body.todo.text).toNotBe(dummyTodos[1].text);
 
                 expect(res.body.todo.completed).toBe(true);
 
@@ -291,7 +279,7 @@ describe('PATCH /todos/:id', () => {
 
     it('Should clear completedAt value', (done) => {
 
-        let id = dummyTodos[3]._id.toHexString();
+        let id = dummyTodos[0]._id.toHexString();
 
         request(app)
             .patch(`/todos/${id}`)
@@ -302,7 +290,7 @@ describe('PATCH /todos/:id', () => {
             .expect(200)
             .expect(res => {
 
-                expect(res.body.todo.text).toNotBe(dummyTodos[3].text);
+                expect(res.body.todo.text).toNotBe(dummyTodos[0].text);
 
                 expect(res.body.todo.completed).toBe(false);
 
@@ -313,5 +301,125 @@ describe('PATCH /todos/:id', () => {
 
     });
 
+
+});
+
+
+describe('POST /users', () => {
+
+
+    it('Should create a user', (done) => {
+
+        let user = { email: 'digba@example.com', password: '123456789' };
+
+        request(app)
+            .post('/users')
+            .send(user)
+            .expect(200)
+            .expect(res => {
+
+                expect(res.body.user.email).toEqual(user.email);
+
+                expect(res.headers['x-auth']).toExist();
+
+                expect(res.body.user._id).toExist();
+
+                expect(res.body.user.email).toEqual(user.email);
+
+            })
+            .end((err, res) => {
+
+                if (err) return done(err);
+
+                User.findOne({ email: user.email })
+                    .then(user => {
+
+                        expect(user).toExist();
+
+                        done();
+
+                    })
+
+            });
+
+    });
+
+    it('Should cnot create a user if request is invalid', (done) => {
+
+        let user = { email: 'digba@examplecom', password: '12345' };
+        request(app)
+            .post('/users')
+            .send(user)
+            .expect(400)
+            .end((err, res) => {
+
+                User.find()
+                    .then(users => {
+
+                        expect(users.length).toBe(2);
+
+                        done();
+
+                    })
+
+            });
+
+    });
+
+    it('Should not create a user if email is in use', (done) => {
+
+        let user = { email: dummyUsers[0].email, password: '12345' };
+
+        request(app)
+            .post('/users')
+            .send(user)
+            .expect(400)
+            .end((err, res) => {
+
+                User.find()
+                    .then(users => {
+
+                        expect(users.length).toBe(2);
+
+                        done();
+
+                    })
+
+            });
+
+    });
+
+});
+
+describe('GET /users/me', () => {
+
+    it('Should return a 401 if not authenticated', (done) => {
+
+        request(app)
+            .get('/users/me')
+            .expect(401)
+            .end(done);
+
+    });
+
+    it('Should return a user if authenticated', (done) => {
+
+        let token = dummyUsers[0].tokens[0].token;
+
+        request(app)
+            .get('/users/me')
+            .set('x-auth', token)
+            .expect(200)
+            .expect(res => {
+
+                expect(res.body.user._id).toBe(dummyUsers[0]._id.toHexString());
+
+                expect(res.body.user.email).toBe(dummyUsers[0].email);
+
+            })
+            .end(done);
+
+
+    });
 
 });
