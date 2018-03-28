@@ -243,6 +243,20 @@ app.post('/users/login', (req, res, next) => {
 
 });
 
+app.delete('/users/me/token', authenticate, (req, res, next) => {
+
+    let user = req.user;
+
+    user.removeToken(req.token)
+        .then(() => {
+
+            res.sendStatus(200);
+
+        })
+        .catch(e => res.sendStatus(400));
+
+});
+
 //#endregion
 
 //#endregion
