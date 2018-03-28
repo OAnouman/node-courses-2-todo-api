@@ -141,6 +141,38 @@ UserSchema.statics.findByToken = function(token) {
 
 };
 
+UserSchema.statics.findByCredentials = function(credentials) {
+
+    let User = this;
+
+    return User.findOne({ email: credentials.email })
+        .then(user => {
+
+            if (!user) {
+
+                return Promise.reject();
+
+            }
+
+            return bcrypt.compare(credentials.password, user.password)
+                .then(isEqual => {
+
+                    if (isEqual)
+
+                        return Promise.resolve(user);
+
+                    else
+
+                        return Promise.reject();
+
+                });
+
+        })
+
+
+
+}
+
 const User = mongoose.model('User', UserSchema);
 
 module.exports = {

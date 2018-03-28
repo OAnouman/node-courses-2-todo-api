@@ -14,6 +14,10 @@ const app = express();
 
 const _ = require('lodash');
 
+const validator = require('validator');
+
+const bcrypt = require('bcryptjs');
+
 // Local imports
 
 const { mongoose } = require('./db/mongoose');
@@ -214,6 +218,28 @@ app.get('/users/me', authenticate, (req, res, next) => {
         });
 
 
+
+});
+
+
+app.post('/users/login', (req, res, next) => {
+
+
+    let credentials = _.pick(req.body, ['email', 'password']);
+
+
+    User.findByCredentials(credentials)
+        .then(user => {
+
+            return user.generateAuthToken()
+                .then(token => {
+
+                    res.header('x-auth', token).send(user);
+
+                })
+
+        })
+        .catch(e => res.sendStatus(404));
 
 });
 
