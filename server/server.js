@@ -190,7 +190,7 @@ app.post('/users', (req, res, next) => {
                 .send({ user });
 
         })
-        .catch(e => res.status(400).send({ e }))
+        .catch(e => res.status(400).send({ e }));
 
 
 })
@@ -234,9 +234,9 @@ app.post('/users/login', (req, res, next) => {
             return user.generateAuthToken()
                 .then(token => {
 
-                    res.header('x-auth', token).send(user);
+                    res.header('x-auth', token).send({ user });
 
-                })
+                });
 
         })
         .catch(e => res.sendStatus(404));

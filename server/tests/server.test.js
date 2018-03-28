@@ -384,6 +384,7 @@ describe('POST /users', () => {
                         done();
 
                     })
+                    .catch(e => done(e));
 
             });
 
@@ -419,6 +420,47 @@ describe('GET /users/me', () => {
             })
             .end(done);
 
+
+    });
+
+});
+
+describe('POST /users/login', () => {
+
+    it('Should return a user and auth token', (done) => {
+
+        let user = dummyUsers[0];
+
+        request(app)
+            .post('/users/login')
+            .send(user)
+            .expect(200)
+            .expect(res => {
+
+                expect(res.headers['x-auth']).toExist();
+
+                expect(res.body.user._id).toEqual(user._id);
+
+                expect(res.body.user.email).toEqual(user.email);
+
+            })
+            .end(done);
+
+    });
+
+    it('Should reject login when creds are invalids', (done) => {
+
+        let user = { email: 'test@example.com', password: '123456789' };
+
+        request(app)
+            .post('/users/login')
+            .expect(404)
+            .expect(res => {
+
+                expect(res.headers['x-auth']).toNotExist();
+
+            })
+            .end(done);
 
     });
 
