@@ -33,6 +33,7 @@ describe('POST /todos', () => {
 
         request(app)
             .post('/todos')
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .send({ text })
             .expect(200)
             .expect(res => {
@@ -68,6 +69,7 @@ describe('POST /todos', () => {
 
         request(app)
             .post('/todos')
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .send({ text })
             .expect(400)
             .end((err, res) => {
@@ -92,6 +94,7 @@ describe('POST /todos', () => {
 
         request(app)
             .post('/todos')
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .send({})
             .expect(400)
             .end((err, res) => {
@@ -115,14 +118,15 @@ describe('POST /todos', () => {
 
 describe('GET /todos', () => {
 
-    it('Should get all two todos', (done) => {
+    it('Should get one todo', (done) => {
 
         request(app)
             .get('/todos')
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .expect(200)
             .expect(res => {
 
-                expect(res.body.todos.length).toBe(2);
+                expect(res.body.todos.length).toBe(1);
 
             })
             .end(done);
@@ -140,6 +144,7 @@ describe('GET /todos/:id', () => {
 
         request(app)
             .get(`/todos/${testId}`)
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .expect(200)
             .expect(res => {
                 expect(res.body).toBeAn('object').toNotBe(null);
@@ -164,10 +169,21 @@ describe('GET /todos/:id', () => {
 
     });
 
+    it('It should not return todo created by an other user', (done) => {
+
+        request(app)
+            .get(`/todos/${dummyTodos[0]._id}`)
+            .set('x-auth', dummyUsers[1].tokens[0].token)
+            .expect(404)
+            .end(done);
+
+    });
+
     it('Should returns a 404 if todo not found', (done) => {
 
         request(app)
             .get(`/todos/${new ObjectID()}`)
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .expect(404)
             .end((err, res) => {
 
@@ -183,6 +199,7 @@ describe('GET /todos/:id', () => {
 
         request(app)
             .get(`/todos/12345789`)
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .expect(400)
             .end((err, res) => {
 
@@ -205,6 +222,7 @@ describe('DELETE /todos/:id', () => {
 
         request(app)
             .delete(`/todos/${id}`)
+            .set('x-auth', dummyUsers[1].tokens[0].token)
             .expect(200)
             .expect(res => {
 
@@ -228,12 +246,23 @@ describe('DELETE /todos/:id', () => {
 
     });
 
+    it('It should not delete todo created by an other user', (done) => {
+
+        request(app)
+            .delete(`/todos/${dummyTodos[0]._id}`)
+            .set('x-auth', dummyUsers[1].tokens[0].token)
+            .expect(404)
+            .end(done);
+
+    });
+
     it('It should returns a 404 if todo not found', (done) => {
 
         let id = new ObjectID();
 
         request(app)
             .delete(`/todos/${id}`)
+            .set('x-auth', dummyUsers[1].tokens[0].token)
             .expect(404)
             .end(done);
 
@@ -243,6 +272,7 @@ describe('DELETE /todos/:id', () => {
 
         request(app)
             .delete('/todos/123')
+            .set('x-auth', dummyUsers[1].tokens[0].token)
             .expect(400)
             .end(done);
 
@@ -259,6 +289,7 @@ describe('PATCH /todos/:id', () => {
 
         request(app)
             .patch(`/todos/${id}`)
+            .set('x-auth', dummyUsers[1].tokens[0].token)
             .send({
                 text: 'I was updated',
                 completed: true,
@@ -277,12 +308,29 @@ describe('PATCH /todos/:id', () => {
 
     });
 
+    it('Should not update todo created by an other user', (done) => {
+
+        let id = dummyTodos[1]._id.toHexString();
+
+        request(app)
+            .patch(`/todos/${id}`)
+            .set('x-auth', dummyUsers[0].tokens[0].token)
+            .send({
+                text: 'I was updated',
+                completed: true,
+            })
+            .expect(404)
+            .end(done);
+
+    });
+
     it('Should clear completedAt value', (done) => {
 
         let id = dummyTodos[0]._id.toHexString();
 
         request(app)
             .patch(`/todos/${id}`)
+            .set('x-auth', dummyUsers[0].tokens[0].token)
             .send({
                 text: 'I\'m not yet finished',
                 completed: false,

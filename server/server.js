@@ -20,7 +20,7 @@ const bcrypt = require('bcryptjs');
 
 // Local imports
 
-const { mongoose } = require('./db/mongoose');
+require('./db/mongoose');
 
 const { ObjectID } = require('mongodb');
 
@@ -45,11 +45,14 @@ app.use(bodyParser.json());
 //#region API routes
 
 //#region Todo routes
-app.post('/todos', (req, res, next) => {
+
+app.post('/todos', authenticate, (req, res, next) => {
 
     let todo = new Todo({
 
         text: req.body.text,
+
+        _creator: req.user._id,
 
     });
 
@@ -60,9 +63,13 @@ app.post('/todos', (req, res, next) => {
 
 });
 
-app.get('/todos', (req, res, next) => {
+app.get('/todos', authenticate, (req, res, next) => {
 
-    Todo.find().then(todos => {
+    Todo.find({
+
+        _creator: req.user._id
+
+    }).then(todos => {
 
         res.send({ todos });
 
@@ -73,7 +80,7 @@ app.get('/todos', (req, res, next) => {
 
 // Get todo by id route
 
-app.get('/todos/:id', (req, res, next) => {
+app.get('/todos/:id', authenticate, (req, res, next) => {
 
     let id = req.params.id;
 
@@ -83,18 +90,25 @@ app.get('/todos/:id', (req, res, next) => {
 
         res.status(400).send(`The given id is not valid `);
 
-    Todo.findById(id)
+    Todo.findOne({
+
+            _id: id,
+
+            _creator: req.user._id,
+
+        })
         .then(todo => {
 
             if (!todo)
 
-                res.status(404).send('No todo matches the given id.');
+                return Promise.reject();
 
             res.send({ todo });
+
         })
         .catch(e => {
 
-            res.sendStatus(400);
+            res.sendStatus(404);
 
         });
 
@@ -104,7 +118,7 @@ app.get('/todos/:id', (req, res, next) => {
 
 // Delete todo route
 
-app.delete('/todos/:id', (req, res, next) => {
+app.delete('/todos/:id', authenticate, (req, res, next) => {
 
     let id = req.params.id;
 
@@ -114,7 +128,11 @@ app.delete('/todos/:id', (req, res, next) => {
 
         res.status(400).send(`The given id is not valid `);
 
-    Todo.findByIdAndRemove(id)
+    Todo.findOneAndRemove({
+            _id: id,
+
+            _creator: req.user._id,
+        })
         .then(todo => {
 
             if (!todo)
@@ -125,14 +143,14 @@ app.delete('/todos/:id', (req, res, next) => {
         })
         .catch(error => {
 
-            res.status(400).send({ error });
+            res.sendStatus(400);
 
         });
 
 
 });
 
-app.patch('/todos/:id', (req, res, next) => {
+app.patch('/todos/:id', authenticate, (req, res, next) => {
 
     let id = req.params.id;
 
@@ -141,6 +159,7 @@ app.patch('/todos/:id', (req, res, next) => {
     if (!ObjectID.isValid(id))
 
         res.status(400).send(`The given id is not valid `);
+
 
     if (_.isBoolean(body.completed) && body.completed) {
 
@@ -154,12 +173,18 @@ app.patch('/todos/:id', (req, res, next) => {
 
     }
 
-    Todo.findByIdAndUpdate(id, { $set: body }, { new: true })
+    Todo.findOneAndUpdate({
+
+            _id: id,
+
+            _creator: req.user._id,
+
+        }, { $set: body }, { new: true })
         .then(todo => {
 
             if (!todo)
 
-                res.status(404).send({ error: 'Todo not found' });
+                res.sendStatus(404);
 
             res.send({ todo });
 

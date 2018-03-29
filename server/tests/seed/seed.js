@@ -17,12 +17,7 @@ const { User } = require('./../../models/User');
 
 // Dummy data to seed database
 
-const dummyTodos = [
 
-    { text: 'First Test text', _id: new ObjectID(), },
-    { text: 'Fourth Test text', _id: new ObjectID(), completed: true, completedAt: 33333 },
-
-];
 
 let userOneId = new ObjectID();
 
@@ -39,7 +34,22 @@ const dummyUsers = [
             token: jwt.sign({ _id: userOneId, access: 'auth' }, '123abc').toString(),
         }]
     },
-    { email: 'agilbert@live.fr', password: '123456789', _id: userTwoId },
+    {
+        email: 'agilbert@live.fr',
+        password: '123456789',
+        _id: userTwoId,
+        tokens: [{
+            access: 'auth',
+            token: jwt.sign({ _id: userTwoId, access: 'auth' }, '123abc').toString(),
+        }]
+    },
+
+];
+
+const dummyTodos = [
+
+    { text: 'First Test text', _id: new ObjectID(), _creator: userOneId },
+    { text: 'Fourth Test text', _id: new ObjectID(), completed: true, completedAt: 33333, _creator: userTwoId },
 
 ];
 

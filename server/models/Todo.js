@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
+const { ObjectID } = require('mongodb');
+
 const todoSchema = new mongoose.Schema({
+
     text: {
         type: String,
         required: true,
@@ -16,7 +19,24 @@ const todoSchema = new mongoose.Schema({
     completedAt: {
         type: Number,
         default: null,
+    },
+
+    _creator: {
+
+        type: mongoose.Schema.Types.ObjectId,
+
+        required: true,
+
+        validate: {
+
+            validator: ObjectID.isValid,
+
+            message: '{VALUE} is not a valid ID'
+
+        },
+
     }
+
 });
 
 const Todo = mongoose.model('Todo', todoSchema);
