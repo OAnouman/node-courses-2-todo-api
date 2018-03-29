@@ -96,7 +96,7 @@ UserSchema.methods.removeToken = function(token) {
         $pull: {
             tokens: { token }
         }
-    })
+    });
 
 };
 
