@@ -14,10 +14,6 @@ const app = express();
 
 const _ = require('lodash');
 
-const validator = require('validator');
-
-const bcrypt = require('bcryptjs');
-
 // Local imports
 
 require('./db/mongoose');
@@ -32,7 +28,7 @@ const { authenticate } = require('./middleware/authenticate');
 
 //#endregion
 
-let port = process.env.PORT || 3000;
+let port = process.env.PORT;
 
 //#region Middleware
 
@@ -217,7 +213,6 @@ app.post('/users', (req, res, next) => {
         })
         .catch(e => res.status(400).send({ e }));
 
-
 })
 
 
@@ -241,8 +236,6 @@ app.get('/users/me', authenticate, (req, res, next) => {
         .catch(e => {
             res.sendStatus(401);
         });
-
-
 
 });
 
@@ -285,7 +278,6 @@ app.delete('/users/me/token', authenticate, (req, res, next) => {
 //#endregion
 
 //#endregion
-
 
 app.listen(port, () => console.log(`Server up and running on port ${port}...`));
 

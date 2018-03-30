@@ -151,7 +151,7 @@ describe('GET /todos/:id', () => {
             })
             .end((err, res) => {
 
-                if (err) console.log(err);
+                if (err) done(err);
 
                 let requestedTodo = res.body.todo;
 
@@ -163,7 +163,7 @@ describe('GET /todos/:id', () => {
                         done();
 
                     })
-                    .catch(err => console.log(err));
+                    .catch(err => done(err));
 
             });
 
